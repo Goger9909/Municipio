@@ -42,11 +42,9 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/auth/registro").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/auth/session").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/logout").permitAll()
-                .requestMatchers("/api/reclamos", "/api/reclamos/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/noticias", "/api/noticias/**").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/noticias").hasRole("ADMINISTRATIVO")
-                .requestMatchers(HttpMethod.PUT, "/api/noticias/**").hasRole("ADMINISTRATIVO")
-                .requestMatchers(HttpMethod.DELETE, "/api/noticias/**").hasRole("ADMINISTRATIVO")
+                .requestMatchers(HttpMethod.POST, "/api/reclamos").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/reclamos/**").hasRole("ADMINISTRATIVO")
+                .requestMatchers(HttpMethod.PUT, "/api/reclamos/**").hasRole("ADMINISTRATIVO")
                 .anyRequest().denyAll());
 
         return http.build();
@@ -64,7 +62,7 @@ public class SecurityConfig {
             }
         }
         configuration.setAllowedOriginPatterns(allowedOriginPatterns);
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Content-Type", "Accept"));
         configuration.setAllowCredentials(true);
 
