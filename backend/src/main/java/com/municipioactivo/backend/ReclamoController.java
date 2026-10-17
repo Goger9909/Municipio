@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Locale;
+import java.util.Set;
 import java.util.UUID;
 
 import jakarta.validation.Valid;
@@ -18,6 +19,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -85,6 +88,35 @@ public class ReclamoController {
     // Devuelve los reclamos cuyo estado coincide con el parámetro recibido.
     public List<Reclamo> obtenerReclamosPorEstado(@PathVariable String estado) {
         return reclamoService.obtenerReclamosPorEstado(estado);
+    }
+
+    // Actualiza el estado de un reclamo existente por su ID
+    @PutMapping("/{id}/estado")
+    public ResponseEntity<Reclamo> actualizarEstadoReclamo(
+            @PathVariable Long id,
+            @Valid @RequestBody EstadoRequest request) {
+        String nuevoEstado = request.estado().trim().toUpperCase(Locale.ROOT);
+        if (!Set.of("PENDIENTE", "EN_PROCESO", "RESUELTO").contains(nuevoEstado)) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        // Buscamos el reclamo usando el servicio
+        List<Reclamo> todos = reclamoService.obtenerTodosLosReclamos();
+        Reclamo reclamoEncontrado = todos.stream()
+                .filter(r -> r.getId().equals(id))
+                .findFirst()
+                .orElse(null);
+
+        if (reclamoEncontrado == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        reclamoEncontrado.setEstado(nuevoEstado);
+        Reclamo actualizado = reclamoService.guardarReclamo(reclamoEncontrado);
+        return ResponseEntity.ok(actualizado);
+    }
+
+    public record EstadoRequest(@NotBlank String estado) {
     }
 
     private String obtenerExtension(String contentType) {
