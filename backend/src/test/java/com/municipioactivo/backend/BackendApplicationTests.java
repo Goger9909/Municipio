@@ -98,6 +98,32 @@ class BackendApplicationTests {
 		assertEquals(404, administrativeClient.send(administrativeUpdate, HttpResponse.BodyHandlers.ofString()).statusCode());
 	}
 
+	@Test
+	void allowsPublicNewsReadsAndRestrictsNewsManagementToAdministrators() throws Exception {
+		HttpClient client = HttpClient.newHttpClient();
+		var publicRead = HttpRequest.newBuilder(URI.create("http://localhost:" + port + "/api/noticias"))
+				.GET()
+				.build();
+		assertEquals(200, client.send(publicRead, HttpResponse.BodyHandlers.ofString()).statusCode());
+
+		String newsBody = """
+				{"category":"Gestión","title":"Noticia de prueba","summary":"Resumen de prueba",
+				"content":"Contenido de prueba","image":"","imageAlt":"","featured":false}
+				""";
+		var createNews = HttpRequest.newBuilder(URI.create("http://localhost:" + port + "/api/noticias"))
+				.header("Content-Type", "application/json")
+				.POST(HttpRequest.BodyPublishers.ofString(newsBody))
+				.build();
+		assertEquals(403, client.send(createNews, HttpResponse.BodyHandlers.ofString()).statusCode());
+
+		HttpClient citizenClient = authenticatedClient("ciudadano");
+		assertEquals(403, citizenClient.send(createNews, HttpResponse.BodyHandlers.ofString()).statusCode());
+
+		HttpClient administrativeClient = authenticatedClient("administrativo");
+		assertEquals(201,
+				administrativeClient.send(createNews, HttpResponse.BodyHandlers.ofString()).statusCode());
+	}
+
 	private HttpClient authenticatedClient(String role) throws Exception {
 		String email = "usuario-" + role + "-" + UUID.randomUUID() + "@example.com";
 		usuarioRepository.save(new Usuario(
