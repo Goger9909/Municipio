@@ -43,8 +43,6 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/auth/session").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/logout").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/reclamos").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/reclamos/**").hasRole("ADMINISTRATIVO")
-                .requestMatchers(HttpMethod.PUT, "/api/reclamos/**").hasRole("ADMINISTRATIVO")
                 .anyRequest().denyAll());
 
         return http.build();
