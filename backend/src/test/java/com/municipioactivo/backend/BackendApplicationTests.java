@@ -31,6 +31,9 @@ class BackendApplicationTests {
 	@Autowired
 	private PasswordEncoder passwordEncoder;
 
+	@Autowired
+	private ReclamoRepository reclamoRepository;
+
 	@Test
 	// Comprueba que la aplicación arranque sin errores de configuración.
 	void contextLoads() {
@@ -43,6 +46,17 @@ class BackendApplicationTests {
 
 		assertEquals(200, response.statusCode());
 		assertTrue(response.body().contains("municipio-api-base-url"));
+	}
+
+	@Test
+	void servesAllPagesLinkedFromTheServicesSection() throws Exception {
+		HttpClient client = HttpClient.newHttpClient();
+		for (String page : new String[] {
+				"/reclamos-municipal.html", "/seguimiento.html", "/servicios.html"
+		}) {
+			var request = HttpRequest.newBuilder(URI.create("http://localhost:" + port + page)).GET().build();
+			assertEquals(200, client.send(request, HttpResponse.BodyHandlers.ofString()).statusCode(), page);
+		}
 	}
 
 	@Test
@@ -122,6 +136,27 @@ class BackendApplicationTests {
 		HttpClient administrativeClient = authenticatedClient("administrativo");
 		assertEquals(201,
 				administrativeClient.send(createNews, HttpResponse.BodyHandlers.ofString()).statusCode());
+	}
+
+	@Test
+	void allowsClaimTrackingByCodeWithoutExposingPrivateClaimDetails() throws Exception {
+		Reclamo reclamo = new Reclamo(
+				"Bacheo", "Calle confidencial 123", "", "Descripción privada del reclamo.", "");
+		reclamo.setCodigoSeguimiento("ABC123DEF456");
+		reclamoRepository.save(reclamo);
+
+		var request = HttpRequest.newBuilder(URI.create(
+				"http://localhost:" + port + "/api/reclamos/seguimiento/abc123def456"))
+				.GET()
+				.build();
+		var response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+
+		assertEquals(200, response.statusCode());
+		assertTrue(response.body().contains("\"codigoSeguimiento\":\"ABC123DEF456\""));
+		assertTrue(response.body().contains("\"categoria\":\"Bacheo\""));
+		assertTrue(response.body().contains("\"estado\":\"PENDIENTE\""));
+		assertTrue(!response.body().contains("Calle confidencial"));
+		assertTrue(!response.body().contains("Descripción privada"));
 	}
 
 	private HttpClient authenticatedClient(String role) throws Exception {

@@ -62,7 +62,7 @@ Si falta el esquema, ejecuta una vez [`crear-esquema-clever-cloud.sql`](frontend
 
 ## Reclamos
 
-El backend guarda los reclamos y las imágenes en el servidor. En plataformas con almacenamiento temporal, los archivos de `uploads/` pueden desaparecer cuando se reinicia la aplicación.
+El portal permite registrar reclamos y consultar su estado con el código de seguimiento que se muestra al enviarlos. La consulta pública por código solo devuelve categoría, estado y fecha; los datos de contacto, dirección y descripción no se exponen. El backend guarda los reclamos y las imágenes en el servidor. En plataformas con almacenamiento temporal, los archivos de `uploads/` pueden desaparecer cuando se reinicia la aplicación.
 
 ## Pruebas
 

@@ -47,6 +47,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/noticias/**").hasRole("ADMINISTRATIVO")
                 .requestMatchers(HttpMethod.PUT, "/api/noticias/**").hasRole("ADMINISTRATIVO")
                 .requestMatchers(HttpMethod.DELETE, "/api/noticias/**").hasRole("ADMINISTRATIVO")
+                .requestMatchers(HttpMethod.GET, "/api/reclamos/seguimiento/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/reclamos", "/api/reclamos/**")
                     .hasRole("ADMINISTRATIVO")
                 .requestMatchers(HttpMethod.PUT, "/api/reclamos/**").hasRole("ADMINISTRATIVO")

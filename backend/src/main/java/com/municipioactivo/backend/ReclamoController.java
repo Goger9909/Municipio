@@ -2,6 +2,7 @@ package com.municipioactivo.backend;
 
 import java.util.List;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/reclamos")
@@ -90,6 +92,18 @@ public class ReclamoController {
         return reclamoService.obtenerReclamosPorEstado(estado);
     }
 
+    @GetMapping("/seguimiento/{codigoSeguimiento}")
+    public SeguimientoResponse consultarSeguimiento(@PathVariable String codigoSeguimiento) {
+        Reclamo reclamo = reclamoService.buscarPorCodigoSeguimiento(codigoSeguimiento.trim())
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "No se encontró un reclamo con ese código de seguimiento"));
+        return new SeguimientoResponse(
+                reclamo.getCodigoSeguimiento(),
+                reclamo.getCategoria(),
+                reclamo.getEstado(),
+                reclamo.getFechaCreacion());
+    }
+
     // Actualiza el estado de un reclamo existente por su ID
     @PutMapping("/{id}/estado")
     public ResponseEntity<Reclamo> actualizarEstadoReclamo(
@@ -117,6 +131,13 @@ public class ReclamoController {
     }
 
     public record EstadoRequest(@NotBlank String estado) {
+    }
+
+    public record SeguimientoResponse(
+            String codigoSeguimiento,
+            String categoria,
+            String estado,
+            LocalDateTime fechaCreacion) {
     }
 
     private String obtenerExtension(String contentType) {
